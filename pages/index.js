@@ -1,9 +1,5 @@
 import Head from "next/head";
-import Image from "next/image";
-import styles from "../styles/Home.module.css";
-
 import { useSession, getSession, signOut } from "next-auth/client";
-
 import Login from "../components/Login";
 import Welcome from "../components/Welcome";
 

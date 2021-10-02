@@ -6,6 +6,17 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
+body {
+  /* height: 100vh; */
+  /* background-color: #4158d0;
+  background-image: linear-gradient(
+    43deg,
+    #4158d0 0%,
+    #c850c0 46%,
+    #ffcc70 100%
+  ); */
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -13,4 +24,23 @@ a {
 
 * {
   box-sizing: border-box;
+}
+
+.css-r6z5ec > * {
+  z-index: 99999 !important;
+  background-color: black;
+}
+
+.ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled) {
+  z-index: 0;
+}
+
+.ant-picker-cell-selected,
+.ant-picker-cell-today,
+.ant-picker-cell {
+  z-index: 0;
+}
+
+.ant-picker-calendar-mode-switch {
+  z-index: 0;
 }

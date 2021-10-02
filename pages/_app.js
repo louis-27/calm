@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "antd/dist/antd.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import { Provider } from "next-auth/client";
 
