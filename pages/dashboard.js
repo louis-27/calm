@@ -1,4 +1,5 @@
 import Head from "next/head";
+import Image from "next/image";
 import Link from "next/link";
 import { getSession, useSession, signOut } from "next-auth/client";
 import {
@@ -14,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { MdPlayArrow } from "react-icons/md";
 import { HamburgerIcon } from "@chakra-ui/icons";
-import { FaSignOut } from "react-icons/fa";
+import Face from "../components/Face";
 import { useRouter } from "next/router";
 import Login from "../components/Login";
 import Calendar from "../components/Dashboard/Calendar";
@@ -26,34 +27,52 @@ import { useEffect, useState } from "react";
 export default function Dashboard() {
   const [session] = useSession();
   const router = useRouter();
-  const [moodScore, setMoodScore] = useState(0);
+  // const [moodScore, setMoodScore] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
 
-  useEffect(() => {
-    const unsub = db
-      .collection("userDocs")
-      .doc(session.user.email)
-      .collection("journal")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          if (!isCalculated) {
-            console.log("mood score:", moodScore);
-            console.log("multiplier:", doc.data().multiplier);
-
-            setMoodScore(moodScore * doc.data().multiplier);
-          }
-        });
-      });
-
-    setIsCalculated(true);
-
-    return unsub;
-  }, []);
+  const [generalSentiment, setGeneralSentiment] = useState("meh");
 
   if (!session) {
     return <Login />;
   }
+
+  useEffect(() => {
+    const unsub = db
+      .collection("userDocs")
+      .doc(session?.user?.email)
+      .collection("journal")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          if (
+            !isCalculated &&
+            doc.data().entryDate === new Date().toLocaleDateString()
+          ) {
+            // console.log("mood score:", moodScore);
+
+            // setMoodScore(doc.data().moodScore);
+            setIsCalculated(true);
+
+            if (doc.data().moodScore <= -3) {
+              setGeneralSentiment("awful");
+            } else if (
+              doc.data().moodScore >= -2 &&
+              doc.data().moodScore <= -1
+            ) {
+              setGeneralSentiment("bad");
+            } else if (doc.data().moodScore == 0) {
+              setGeneralSentiment("meh");
+            } else if (doc.data().moodScore >= 1 && doc.data().moodScore <= 2) {
+              setGeneralSentiment("good");
+            } else if (doc.data().moodScore >= 3) {
+              setGeneralSentiment("happy");
+            }
+          }
+        });
+      });
+
+    return unsub;
+  }, []);
 
   const firstName = session?.user?.name.split(" ")[0];
   const today = new Date().toLocaleDateString();
@@ -106,8 +125,6 @@ export default function Dashboard() {
                   variant="outline"
                 />
                 <MenuList>
-                  <MenuItem>Your insights</MenuItem>
-                  <MenuItem>Stats</MenuItem>
                   <MenuItem onClick={signOut}>
                     <Link href="/">Sign out</Link>
                   </MenuItem>
@@ -121,15 +138,28 @@ export default function Dashboard() {
                 flexDirection="column"
                 justifyContent="space-between"
               >
-                <Box className="glassbangsat" borderRadius="xl" height="35%">
+                <Box className="glassmorphism" borderRadius="xl" height="35%">
                   <Box>
-                    <Text
-                      marginTop="15px"
-                      marginLeft="20px"
-                      fontSize="3xl"
-                      fontWeight="bold"
-                    >
-                      Listen to some chill music
+                    <Flex alignItems="center">
+                      <Text
+                        marginTop="15px"
+                        marginLeft="20px"
+                        fontSize="5xl"
+                        fontWeight="bold"
+                      >
+                        You are feeling
+                      </Text>
+                      <Box marginTop="15px" marginLeft="15px">
+                        <Image
+                          src={`/images/${generalSentiment}.png`}
+                          alt="mood"
+                          width="50px"
+                          height="50px"
+                        />
+                      </Box>
+                    </Flex>
+                    <Text marginLeft="20px" fontSize="xl" fontWeight="light">
+                      Listen to our music playlist!
                     </Text>
                   </Box>
                   <Box
@@ -160,7 +190,7 @@ export default function Dashboard() {
                   </Text>
 
                   <Box
-                    className="glassbangsat"
+                    className="glassmorphism"
                     borderRadius="xl"
                     height="90%"
                     overflowX="hidden"

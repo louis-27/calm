@@ -20,12 +20,8 @@ const Welcome = () => {
   const [inputValue, setInputValue] = useState("");
   const firstName = session?.user?.name.split(" ")[0];
 
-  // Trying out sentiment
   const sentiment = new Sentiment();
-  // const [sentimentScore, setSentimentScore] = useState(0);
   const [generalSentiment, setGeneralSentiment] = useState("meh");
-
-  // console.log("time", new Date().toLocaleDateString());
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -140,7 +136,7 @@ const Welcome = () => {
     >
       <Center height="100vh">
         <Box
-          className="glassbangsat"
+          className="glassmorphism"
           width="3xl"
           paddingY="40px"
           borderRadius="lg"
