@@ -104,7 +104,7 @@ export default function Dashboard() {
                 <MenuList>
                   <MenuItem>Your insights</MenuItem>
                   <MenuItem>Stats</MenuItem>
-                  <MenuItem onClick={signOut} icon={<FaSignOut />}>
+                  <MenuItem onClick={signOut}>
                     <Link href="/">Sign out</Link>
                   </MenuItem>
                 </MenuList>
