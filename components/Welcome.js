@@ -65,7 +65,6 @@ const Welcome = () => {
     console.log("General Sentiment:", generalSentiment);
     console.log("Analysis Result:", sentimentAnalysisResult);
     setInputValue("");
-    // setGeneralSentiment("");
 
     setOnMore(true);
   };

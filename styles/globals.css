@@ -6,17 +6,6 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-body {
-  /* height: 100vh; */
-  /* background-color: #4158d0;
-  background-image: linear-gradient(
-    43deg,
-    #4158d0 0%,
-    #c850c0 46%,
-    #ffcc70 100%
-  ); */
-}
-
 a {
   color: inherit;
   text-decoration: none;
@@ -46,7 +35,6 @@ a {
 }
 
 /* Glassmorphism */
-
 .glassmorphism {
   background: rgba(255, 255, 255, 0.25);
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);

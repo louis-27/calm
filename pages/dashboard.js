@@ -15,7 +15,6 @@ import {
 } from "@chakra-ui/react";
 import { MdPlayArrow } from "react-icons/md";
 import { HamburgerIcon } from "@chakra-ui/icons";
-import Face from "../components/Face";
 import { useRouter } from "next/router";
 import Login from "../components/Login";
 import Calendar from "../components/Dashboard/Calendar";
@@ -27,7 +26,6 @@ import { useEffect, useState } from "react";
 export default function Dashboard() {
   const [session] = useSession();
   const router = useRouter();
-  // const [moodScore, setMoodScore] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
 
   const [generalSentiment, setGeneralSentiment] = useState("meh");
@@ -48,9 +46,6 @@ export default function Dashboard() {
             !isCalculated &&
             doc.data().entryDate === new Date().toLocaleDateString()
           ) {
-            // console.log("mood score:", moodScore);
-
-            // setMoodScore(doc.data().moodScore);
             setIsCalculated(true);
 
             if (doc.data().moodScore <= -3) {
