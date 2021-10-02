@@ -2,6 +2,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { getSession, useSession, signOut } from "next-auth/client";
 import {
+  Icon,
   Box,
   Flex,
   Menu,
@@ -11,22 +12,39 @@ import {
   IconButton,
   Text,
 } from "@chakra-ui/react";
+import { MdPlayArrow } from "react-icons/md";
 import { HamburgerIcon } from "@chakra-ui/icons";
+import { FaSignOut } from "react-icons/fa";
 import { useRouter } from "next/router";
 import Login from "../components/Login";
 import Calendar from "../components/Dashboard/Calendar";
 import { db } from "../firebase";
 import { useCollectionOnce } from "react-firebase-hooks/firestore";
 import DashboardNotesRow from "../components/Dashboard/DashboardNotesRow";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [session] = useSession();
   const router = useRouter();
+  const [moodScore, setMoodScore] = useState(100);
+  const [isCalculated, setIsCalculated] = useState(false);
 
-  // const onSignout = () => {
-  //   signOut();
-  //   router.push("/");
-  // };
+  useEffect(() => {
+    const unsub = db
+      .collection("userDocs")
+      .doc(session.user.email)
+      .collection("journal")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          if (!isCalculated) setMoodScore(moodScore * doc.data().multiplier);
+        });
+      });
+
+    setIsCalculated(true);
+
+    return unsub;
+  }, []);
 
   if (!session) {
     return <Login />;
@@ -41,6 +59,12 @@ export default function Dashboard() {
       .collection("journal")
       .orderBy("dateCreated", "desc")
   );
+
+  const handleClick = () => {
+    window.open(
+      "https://open.spotify.com/playlist/6HYxTAm2r9bjF6mbmKwNnu?si=1e365b45779c4e0e"
+    );
+  };
 
   return (
     <>
@@ -66,7 +90,8 @@ export default function Dashboard() {
           >
             <Flex justifyContent="space-between">
               <Text fontSize="3xl" fontWeight="bold">
-                Hello, {firstName[0].toUpperCase() + firstName.substring(1)}!
+                Hello, {firstName[0].toUpperCase() + firstName.substring(1)}! (
+                {moodScore})
               </Text>
 
               <Menu>
@@ -79,7 +104,7 @@ export default function Dashboard() {
                 <MenuList>
                   <MenuItem>Your insights</MenuItem>
                   <MenuItem>Stats</MenuItem>
-                  <MenuItem onClick={signOut}>
+                  <MenuItem onClick={signOut} icon={<FaSignOut />}>
                     <Link href="/">Sign out</Link>
                   </MenuItem>
                 </MenuList>
@@ -92,10 +117,37 @@ export default function Dashboard() {
                 flexDirection="column"
                 justifyContent="space-between"
               >
-                <Box borderRadius="lg" backgroundColor="white" height="35%">
-                  <Text marginLeft="30px" fontSize="xl" fontWeight="bold">
-                    Coming soon..
-                  </Text>
+                <Box className="glassbangsat" borderRadius="xl" height="35%">
+                  <Box>
+                    <Text
+                      marginTop="15px"
+                      marginLeft="20px"
+                      fontSize="3xl"
+                      fontWeight="bold"
+                    >
+                      Listen to some chill music
+                    </Text>
+                  </Box>
+                  <Box
+                    position="absolute"
+                    bottom="15px"
+                    right="15px"
+                    backgroundColor="black"
+                    borderRadius="50%"
+                    height="50px"
+                    width="50px"
+                    cursor="pointer"
+                  >
+                    <Icon
+                      as={MdPlayArrow}
+                      w={30}
+                      h={30}
+                      color="white"
+                      marginTop="10px"
+                      marginLeft="10px"
+                      onClick={handleClick}
+                    />
+                  </Box>
                 </Box>
 
                 <Box height="50%">
@@ -103,7 +155,12 @@ export default function Dashboard() {
                     Daily notes
                   </Text>
 
-                  <Box borderRadius="lg" backgroundColor="white" height="90%">
+                  <Box
+                    className="glassbangsat"
+                    borderRadius="xl"
+                    height="90%"
+                    overflowX="hidden"
+                  >
                     {snapshot?.docs.map((doc) => {
                       if (today === doc.data().entryDate) {
                         return (
@@ -122,7 +179,12 @@ export default function Dashboard() {
                 </Box>
               </Flex>
 
-              <Box borderRadius="lg" backgroundColor="white" width="45%">
+              <Box
+                backgroundColor="white"
+                borderRadius="xl"
+                width="45%"
+                height="90%"
+              >
                 <Calendar />
               </Box>
             </Flex>
