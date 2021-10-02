@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 export default function Dashboard() {
   const [session] = useSession();
   const router = useRouter();
-  const [moodScore, setMoodScore] = useState(100);
+  const [moodScore, setMoodScore] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
 
   useEffect(() => {
@@ -37,7 +37,12 @@ export default function Dashboard() {
       .get()
       .then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          if (!isCalculated) setMoodScore(moodScore * doc.data().multiplier);
+          if (!isCalculated) {
+            console.log("mood score:", moodScore);
+            console.log("multiplier:", doc.data().multiplier);
+
+            setMoodScore(moodScore * doc.data().multiplier);
+          }
         });
       });
 
@@ -90,8 +95,7 @@ export default function Dashboard() {
           >
             <Flex justifyContent="space-between">
               <Text fontSize="3xl" fontWeight="bold">
-                Hello, {firstName[0].toUpperCase() + firstName.substring(1)}! (
-                {moodScore})
+                Hello, {firstName[0].toUpperCase() + firstName.substring(1)}!
               </Text>
 
               <Menu>

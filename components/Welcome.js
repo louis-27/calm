@@ -9,6 +9,9 @@ import { useRouter } from "next/router";
 import firebase from "firebase";
 import { db } from "../firebase";
 
+import Sentiment from "sentiment";
+import Face from "./Face";
+
 const Welcome = () => {
   const [session] = useSession();
   const router = useRouter();
@@ -17,22 +20,12 @@ const Welcome = () => {
   const [inputValue, setInputValue] = useState("");
   const firstName = session?.user?.name.split(" ")[0];
 
+  // Trying out sentiment
+  const sentiment = new Sentiment();
+  // const [sentimentScore, setSentimentScore] = useState(0);
+  const [generalSentiment, setGeneralSentiment] = useState("meh");
+
   // console.log("time", new Date().toLocaleDateString());
-
-  // Add mood entry to Firestore
-  const moodMultipliers = [0.4, 0.8, 1, 1.2, 1.6];
-  // const onInputMoodFinish = () => {
-  //   // db.collection("userDocs")
-  //   //   .doc(session.user.email)
-  //   //   .collection("moodEntries")
-  //   //   .add({
-  //   //     multiplier: moodMultipliers[selectedMood],
-  //   //     entryDate: new Date().toLocaleDateString(),
-  //   //     dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-  //   //   });
-
-  //   setOnMore(true);
-  // };
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -42,6 +35,26 @@ const Welcome = () => {
   const journalEntry = () => {
     if (!inputValue) return;
 
+    const sentimentAnalysisResult = sentiment.analyze(inputValue);
+
+    if (sentimentAnalysisResult.score <= -3) {
+      setGeneralSentiment("awful");
+    } else if (
+      sentimentAnalysisResult.score >= -2 &&
+      sentimentAnalysisResult.score <= -1
+    ) {
+      setGeneralSentiment("bad");
+    } else if (sentimentAnalysisResult.score == 0) {
+      setGeneralSentiment("meh");
+    } else if (
+      sentimentAnalysisResult.score >= 1 &&
+      sentimentAnalysisResult.score <= 2
+    ) {
+      setGeneralSentiment("good");
+    } else if (sentimentAnalysisResult.score >= 3) {
+      setGeneralSentiment("happy");
+    }
+
     db.collection("userDocs")
       .doc(session.user.email)
       .collection("journal")
@@ -49,24 +62,25 @@ const Welcome = () => {
         entryName: inputValue,
         entryDate: new Date().toLocaleDateString(),
         dateCreated: firebase.firestore.FieldValue.serverTimestamp(),
-        multiplier: moodMultipliers[selectedMood],
+        moodScore: sentimentAnalysisResult.score,
       });
 
+    console.log("Sentiment score: ", sentimentAnalysisResult.score);
+    console.log("General Sentiment:", generalSentiment);
+    console.log("Analysis Result:", sentimentAnalysisResult);
     setInputValue("");
+    // setGeneralSentiment("");
 
-    router.push("dashboard");
+    setOnMore(true);
   };
 
   const SelectMood = (
     <>
-      <Text fontSize="md">
-        Welcome, {firstName[0].toUpperCase() + firstName.substring(1)}
-      </Text>
-      <Text fontWeight="bold" marginTop="1.5" fontSize="4xl">
-        How are you?
-      </Text>
-
       <Text fontSize="md">{new Date().toDateString()}</Text>
+      <Text fontWeight="bold" marginTop="1.5" fontSize="4xl">
+        {firstName[0].toUpperCase() + firstName.substring(1)}, you seem to be
+        feeling..
+      </Text>
 
       <Flex
         textAlign="center"
@@ -74,60 +88,16 @@ const Welcome = () => {
         width="80%"
         marginY="40px"
       >
-        <div onClick={() => setSelectedMood(0)} style={{ cursor: "pointer" }}>
-          <Image
-            src={`/images/1-awful.png`}
-            alt="Awful"
-            width="50px"
-            height="50px"
-          />
-          <Text>Awful</Text>
-        </div>
-        <div onClick={() => setSelectedMood(1)} style={{ cursor: "pointer" }}>
-          <Image
-            src={`/images/2-bad.png`}
-            alt="Bad"
-            width="50px"
-            height="50px"
-          />
-          <Text>Bad</Text>
-        </div>
-        <div onClick={() => setSelectedMood(2)} style={{ cursor: "pointer" }}>
-          <Image
-            src={`/images/3-meh.png`}
-            alt="Meh"
-            width="50px"
-            height="50px"
-          />
-          <Text>Meh</Text>
-        </div>
-        <div onClick={() => setSelectedMood(3)} style={{ cursor: "pointer" }}>
-          <Image
-            src={`/images/4-good.png`}
-            alt="Good"
-            width="50px"
-            height="50px"
-          />
-          <Text>Good</Text>
-        </div>
-        <div onClick={() => setSelectedMood(4)} style={{ cursor: "pointer" }}>
-          <Image
-            src={`/images/5-happy.png`}
-            alt="Happy"
-            width="50px"
-            height="50px"
-          />
-          <Text>Happy</Text>
-        </div>
+        <Face mood={generalSentiment} size="100px" />
       </Flex>
 
       <Button
         rightIcon={<ArrowForwardIcon />}
         colorScheme="teal"
         variant="outline"
-        onClick={() => setOnMore(true)}
+        onClick={() => router.push("dashboard")}
       >
-        Tell me more
+        Continue to Dashboard
       </Button>
     </>
   );
@@ -140,7 +110,7 @@ const Welcome = () => {
         marginTop="1.5"
         fontSize="4xl"
       >
-        Tell me more
+        Tell me
       </Text>
 
       <Textarea
@@ -180,7 +150,7 @@ const Welcome = () => {
             flexDirection="column"
             alignItems="center"
           >
-            {onMore ? MoreInfo : SelectMood}
+            {!onMore ? MoreInfo : SelectMood}
           </Flex>
         </Box>
       </Center>
