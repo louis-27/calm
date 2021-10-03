@@ -11,7 +11,5 @@ export default NextAuth({
     }),
   ],
   adapter: FirebaseAdapter(db),
-
-  database: process.env.DATABASE_URL,
   theme: "light",
 });
