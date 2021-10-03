@@ -14,7 +14,6 @@
     "@emotion/react": "^11",
     "@emotion/styled": "^11",
     "@next-auth/firebase-adapter": "^0.0.2-canary.207",
-    "@tensorflow/tfjs": "^3.9.0",
     "antd": "^4.16.13",
     "chart.js": "^3.5.1",
     "firebase": "8.0",
@@ -23,7 +22,6 @@
     "next-auth": "^3.29.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "react-firebase-hooks": "^3.0.4",
     "react-icons": "^4.2.0",
     "sentiment": "^5.0.2"
   },

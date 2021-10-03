@@ -1,11 +1,14 @@
 import Head from "next/head";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/router";
 import { getSession, useSession, signOut } from "next-auth/client";
 import {
   Icon,
   Box,
+  Center,
+  CircularProgress,
   Flex,
+  Image as ImageChakra,
   Menu,
   MenuButton,
   MenuList,
@@ -15,69 +18,73 @@ import {
 } from "@chakra-ui/react";
 import { MdPlayArrow } from "react-icons/md";
 import { HamburgerIcon } from "@chakra-ui/icons";
-import { useRouter } from "next/router";
-import Login from "../components/Login";
 import Calendar from "../components/Dashboard/Calendar";
 import { db } from "../firebase";
-import { useCollectionOnce } from "react-firebase-hooks/firestore";
 import DashboardNotesRow from "../components/Dashboard/DashboardNotesRow";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const [session] = useSession();
   const router = useRouter();
-  const [isCalculated, setIsCalculated] = useState(false);
-
+  const [journals, setJournals] = useState([]);
   const [generalSentiment, setGeneralSentiment] = useState("meh");
-
-  if (!session) {
-    return <Login />;
-  }
+  const [isLoaded, setIsLoaded] = useState(false);
+  const today = new Date().toLocaleDateString();
 
   useEffect(() => {
+    if (!session) {
+      // if user session is null (user is not signed in), then:
+      router.replace("/"); // redirect user from dashboard to index page
+      return; // do not continue this useEffect hook
+    }
+
     const unsub = db
       .collection("userDocs")
       .doc(session?.user?.email)
       .collection("journal")
-      .get()
-      .then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-          if (
-            !isCalculated &&
-            doc.data().entryDate === new Date().toLocaleDateString()
-          ) {
-            setIsCalculated(true);
-
-            if (doc.data().moodScore <= -3) {
-              setGeneralSentiment("awful");
-            } else if (
-              doc.data().moodScore >= -2 &&
-              doc.data().moodScore <= -1
-            ) {
-              setGeneralSentiment("bad");
-            } else if (doc.data().moodScore == 0) {
-              setGeneralSentiment("meh");
-            } else if (doc.data().moodScore >= 1 && doc.data().moodScore <= 2) {
-              setGeneralSentiment("good");
-            } else if (doc.data().moodScore >= 3) {
-              setGeneralSentiment("happy");
-            }
-          }
+      .orderBy("dateCreated", "desc")
+      .onSnapshot((snapshot) => {
+        const dailyJournals = snapshot.docs.map((journal) => {
+          return {
+            id: journal.id,
+            ...journal.data(),
+          };
         });
+
+        setJournals(
+          dailyJournals.filter(
+            (journal) =>
+              journal.dateCreated.toDate().toLocaleDateString() === today
+          )
+        );
+
+        if (dailyJournals[0].moodScore <= -3) {
+          setGeneralSentiment("awful");
+        } else if (
+          dailyJournals[0].moodScore >= -2 &&
+          dailyJournals[0].moodScore <= -1
+        ) {
+          setGeneralSentiment("bad");
+        } else if (dailyJournals[0].moodScore == 0) {
+          setGeneralSentiment("meh");
+        } else if (
+          dailyJournals[0].moodScore >= 1 &&
+          dailyJournals[0].moodScore <= 2
+        ) {
+          setGeneralSentiment("good");
+        } else if (dailyJournals[0].moodScore >= 3) {
+          setGeneralSentiment("happy");
+        }
+
+        setIsLoaded(true);
       });
 
+    console.log(journals);
     return unsub;
-  }, []);
+    // }, []); // warning from ESLint when provided an empty array as dependency of this useEffect hook
+  });
 
   const firstName = session?.user?.name.split(" ")[0];
-  const today = new Date().toLocaleDateString();
-  const [snapshot] = useCollectionOnce(
-    db
-      .collection("userDocs")
-      .doc(session.user.email)
-      .collection("journal")
-      .orderBy("dateCreated", "desc")
-  );
 
   const handleClick = () => {
     window.open(
@@ -121,7 +128,14 @@ export default function Dashboard() {
                 />
                 <MenuList>
                   <MenuItem onClick={signOut}>
-                    <Link href="/">Sign out</Link>
+                    <ImageChakra
+                      boxSize="2rem"
+                      src={session.user.image}
+                      borderRadius="full"
+                      alt="User Avatar"
+                      mr="10px"
+                    />
+                    <span>Sign out</span>
                   </MenuItem>
                 </MenuList>
               </Menu>
@@ -134,49 +148,62 @@ export default function Dashboard() {
                 justifyContent="space-between"
               >
                 <Box className="glassmorphism" borderRadius="xl" height="35%">
-                  <Box>
-                    <Flex alignItems="center">
-                      <Text
-                        marginTop="15px"
-                        marginLeft="20px"
-                        fontSize="5xl"
-                        fontWeight="bold"
+                  {!isLoaded ? (
+                    <Center height="100%">
+                      <CircularProgress isIndeterminate color="blue.400" />
+                    </Center>
+                  ) : (
+                    <>
+                      <Box>
+                        <Flex alignItems="center">
+                          <Text
+                            marginTop="15px"
+                            marginLeft="20px"
+                            fontSize="5xl"
+                            fontWeight="bold"
+                          >
+                            You are feeling
+                          </Text>
+
+                          <Box marginTop="15px" marginLeft="15px">
+                            <Image
+                              src={`/images/${generalSentiment}.png`}
+                              alt="mood"
+                              width="50px"
+                              height="50px"
+                            />
+                          </Box>
+                        </Flex>
+                        <Text
+                          marginLeft="20px"
+                          fontSize="xl"
+                          fontWeight="light"
+                        >
+                          Listen to our music playlist!
+                        </Text>
+                      </Box>
+                      <Box
+                        position="absolute"
+                        bottom="15px"
+                        right="15px"
+                        backgroundColor="black"
+                        borderRadius="50%"
+                        height="50px"
+                        width="50px"
+                        cursor="pointer"
                       >
-                        You are feeling
-                      </Text>
-                      <Box marginTop="15px" marginLeft="15px">
-                        <Image
-                          src={`/images/${generalSentiment}.png`}
-                          alt="mood"
-                          width="50px"
-                          height="50px"
+                        <Icon
+                          as={MdPlayArrow}
+                          w={30}
+                          h={30}
+                          color="white"
+                          marginTop="10px"
+                          marginLeft="10px"
+                          onClick={handleClick}
                         />
                       </Box>
-                    </Flex>
-                    <Text marginLeft="20px" fontSize="xl" fontWeight="light">
-                      Listen to our music playlist!
-                    </Text>
-                  </Box>
-                  <Box
-                    position="absolute"
-                    bottom="15px"
-                    right="15px"
-                    backgroundColor="black"
-                    borderRadius="50%"
-                    height="50px"
-                    width="50px"
-                    cursor="pointer"
-                  >
-                    <Icon
-                      as={MdPlayArrow}
-                      w={30}
-                      h={30}
-                      color="white"
-                      marginTop="10px"
-                      marginLeft="10px"
-                      onClick={handleClick}
-                    />
-                  </Box>
+                    </>
+                  )}
                 </Box>
 
                 <Box height="50%">
@@ -190,20 +217,23 @@ export default function Dashboard() {
                     height="90%"
                     overflowX="hidden"
                   >
-                    {snapshot?.docs.map((doc) => {
-                      if (today === doc.data().entryDate) {
+                    {!isLoaded ? (
+                      <Center height="100%">
+                        <CircularProgress isIndeterminate color="blue.400" />
+                      </Center>
+                    ) : (
+                      journals.map((journal) => {
                         return (
                           <DashboardNotesRow
-                            key={doc.id}
-                            entry={doc.data().entryName}
-                            time={doc
-                              .data()
-                              .dateCreated.toDate()
+                            key={journal.id}
+                            entry={journal.entryName}
+                            time={journal.dateCreated
+                              .toDate()
                               .toLocaleTimeString()}
                           />
                         );
-                      }
-                    })}
+                      })
+                    )}
                   </Box>
                 </Box>
               </Flex>

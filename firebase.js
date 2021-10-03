@@ -1,12 +1,12 @@
 import firebase from "firebase";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA2r8VEiW9RkmkrwQ2-1LzOrA7g4yqCU-c",
-  authDomain: "bpm-hackathon-mood-tracker.firebaseapp.com",
-  projectId: "bpm-hackathon-mood-tracker",
-  storageBucket: "bpm-hackathon-mood-tracker.appspot.com",
-  messagingSenderId: "232765848435",
-  appId: "1:232765848435:web:7f02f469026935897de306",
+  apiKey: "AIzaSyCvqQYLNflffisyAKGGtoGejXZRn-FnXbc",
+  authDomain: "sentiment-ai-mood-tracker.firebaseapp.com",
+  projectId: "sentiment-ai-mood-tracker",
+  storageBucket: "sentiment-ai-mood-tracker.appspot.com",
+  messagingSenderId: "969632790453",
+  appId: "1:969632790453:web:49d7ef3b8ba9ea00364bfc",
 };
 
 const app = !firebase.apps.length

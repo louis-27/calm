@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Box, Button, Center, Flex, Text, Textarea } from "@chakra-ui/react";
 import { ArrowForwardIcon } from "@chakra-ui/icons";
 
@@ -16,7 +15,6 @@ const Welcome = () => {
   const [session] = useSession();
   const router = useRouter();
   const [onMore, setOnMore] = useState(false);
-  const [selectedMood, setSelectedMood] = useState(2);
   const [inputValue, setInputValue] = useState("");
   const firstName = session?.user?.name.split(" ")[0];
 
